@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
 import '../intercom_transport.dart';
@@ -15,7 +16,7 @@ class HTTPIntercomTransport extends IntercomTransport {
     Map<String, dynamic>? query,
     T Function(dynamic)? decoder,
   }) async {
-    return _request('GET', path, query: query, decoder: decoder);
+    return request('GET', path, query: query, decoder: decoder);
   }
 
   @override
@@ -23,7 +24,7 @@ class HTTPIntercomTransport extends IntercomTransport {
     Map<String, dynamic>? query,
     T Function(dynamic)? decoder,
   }) async {
-    return _request('DELETE', path, query: query, decoder: decoder);
+    return request('DELETE', path, query: query, decoder: decoder);
   }
 
   @override
@@ -31,7 +32,7 @@ class HTTPIntercomTransport extends IntercomTransport {
     Map<String, dynamic>? query,
     T Function(dynamic)? decoder,
   }) async {
-    return _request('POST', path, query: query, decoder: decoder);
+    return request('POST', path, query: query, decoder: decoder);
   }
 
   @override
@@ -39,7 +40,7 @@ class HTTPIntercomTransport extends IntercomTransport {
     Map<String, dynamic>? query,
     T Function(dynamic)? decoder,
   }) async {
-    return _request('PUT', path, query: query, decoder: decoder);
+    return request('PUT', path, query: query, decoder: decoder);
   }
 
   @override
@@ -47,7 +48,7 @@ class HTTPIntercomTransport extends IntercomTransport {
     Map<String, dynamic>? query,
     T Function(dynamic)? decoder,
   }) async {
-    return _request('PATCH', path, query: query, decoder: decoder);
+    return request('PATCH', path, query: query, decoder: decoder);
   }
 
   @override
@@ -55,7 +56,7 @@ class HTTPIntercomTransport extends IntercomTransport {
     Map<String, dynamic>? query,
     T Function(dynamic)? decoder,
   }) async {
-    return _request('HEAD', path, query: query, decoder: decoder);
+    return request('HEAD', path, query: query, decoder: decoder);
   }
 
   @override
@@ -63,38 +64,16 @@ class HTTPIntercomTransport extends IntercomTransport {
     Map<String, dynamic>? query,
     T Function(dynamic)? decoder,
   }) async {
-    return _request('OPTIONS', path, query: query, decoder: decoder);
+    return request('OPTIONS', path, query: query, decoder: decoder);
   }
 
-  Future<T> _request<T>(String method, String path, {
+  @protected
+  Future<T> request<T>(String method, String path, {
     Map<String, dynamic>? query,
     T Function(dynamic)? decoder,
   }) async {
     final url = Uri.https(baseURL, path, query);
-    late http.Response res;
-
-    switch (method) {
-      case 'GET':
-        res = await http.get(url, headers: _getHeaders(decoder));
-        break;
-      case 'DELETE':
-        res = await http.delete(url, headers: _getHeaders(decoder));
-        break;
-      case 'POST':
-        res = await http.post(url, headers: _getHeaders(decoder));
-        break;
-      case 'PUT':
-        res = await http.put(url, headers: _getHeaders(decoder));
-        break;
-      case 'PATCH':
-        res = await http.patch(url, headers: _getHeaders(decoder));
-        break;
-      case 'HEAD':
-        res = await http.head(url, headers: _getHeaders(decoder));
-        break;
-      default:
-        throw ArgumentError('Invalid HTTP method $method');
-    }
+    final res = await httpRequest(method, url, headers: _getHeaders(decoder));
 
     if (decoder != null) {
       return decoder(jsonDecode(res.body));
@@ -102,6 +81,30 @@ class HTTPIntercomTransport extends IntercomTransport {
       return res.body as T;
     }
     throw ArgumentError('decoder must be provided for type $T');
+  }
+
+  @protected
+  Future<http.Response> httpRequest(String method, Uri url, {
+    Map<String, String>? headers
+  }) async {
+
+    switch (method) {
+      case 'GET':
+        return await http.get(url, headers: headers);
+      case 'DELETE':
+        return await http.delete(url, headers: headers);
+      case 'POST':
+        return await http.post(url, headers: headers);
+      case 'PUT':
+        return await http.put(url, headers: headers);
+      case 'PATCH':
+        return await http.patch(url, headers: headers);
+      case 'HEAD':
+        return await http.head(url, headers: headers);
+      default:
+        throw ArgumentError('Invalid HTTP method $method');
+    }
+
   }
 
   Map<String, String> _getHeaders<T>(T Function(String)? decoder) {
