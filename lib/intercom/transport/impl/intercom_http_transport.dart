@@ -84,7 +84,14 @@ class HTTPIntercomTransport extends IntercomTransport {
       headers: _getHeaders(decoder),
     );
 
-    final res = await _request(method, url, headers: _getHeaders(decoder));
+    late final http.Response res;
+
+    try {
+      res = await _request(method, url, headers: _getHeaders(decoder));
+    } catch (e) {
+      logger?.onError(method, url.toString(), error: e);
+      rethrow;
+    }
 
     logger?.onResponse(method, url.toString(),
       statusCode: res.statusCode,
