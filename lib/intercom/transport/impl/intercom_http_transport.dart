@@ -2,13 +2,17 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+import 'package:intercom_api/intercom/transport/intercom_transport_logger.dart';
 
 import '../intercom_transport.dart';
 
 class HTTPIntercomTransport extends IntercomTransport {
+  final IntercomTransportLogger? logger;
+
   const HTTPIntercomTransport({
     required super.auth,
-    required super.baseURL
+    required super.baseURL,
+    this.logger,
   });
 
   @override
@@ -73,7 +77,20 @@ class HTTPIntercomTransport extends IntercomTransport {
     T Function(dynamic)? decoder,
   }) async {
     final url = Uri.https(baseURL, path, query);
-    final res = await httpRequest(method, url, headers: _getHeaders(decoder));
+
+    logger?.onRequest(method, url.toString(),
+      query: query,
+      body: null,
+      headers: _getHeaders(decoder),
+    );
+
+    final res = await _request(method, url, headers: _getHeaders(decoder));
+
+    logger?.onResponse(method, url.toString(),
+      statusCode: res.statusCode,
+      body: res.body,
+      headers: res.headers,
+    );
 
     if (decoder != null) {
       return decoder(jsonDecode(res.body));
@@ -84,7 +101,7 @@ class HTTPIntercomTransport extends IntercomTransport {
   }
 
   @protected
-  Future<http.Response> httpRequest(String method, Uri url, {
+  Future<http.Response> _request(String method, Uri url, {
     Map<String, String>? headers
   }) async {
 
@@ -120,3 +137,4 @@ class HTTPIntercomTransport extends IntercomTransport {
   }
 
 }
+
