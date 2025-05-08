@@ -32,7 +32,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
 
-  late final client = Client.accessToken('YOUR_ACCESS');
+  late final client = Client.accessToken('YOUR_ACCESS_TOKEN');
 
   @override
   Widget build(BuildContext context) {

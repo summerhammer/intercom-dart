@@ -1,5 +1,7 @@
 import 'package:json_annotation/json_annotation.dart';
 
+import 'serialization/converters.dart';
+
 part 'pages.g.dart';
 
 @JsonSerializable(genericArgumentFactories: true)
@@ -35,6 +37,7 @@ class Paginated<T> {
 class PaginatedPages {
   final String type = 'pages';
 
+  @PaginatedPagesNextConverter()
   final PaginatedPagesNext? next;
 
   final int page;
@@ -58,25 +61,73 @@ class PaginatedPages {
 
   @override
   String toString() {
-    return 'PaginatedPages{type: $type, next: $next, page: $page, perPage: $perPage, totalPages: $totalPages}';
+    return 'PaginatedPages{'
+      'type: $type, '
+      'next: $next, '
+      'page: $page, '
+      'perPage: $perPage, '
+      'totalPages: $totalPages}';
   }
 }
 
-@JsonSerializable()
-class PaginatedPagesNext {
+sealed class PaginatedPagesNext {
+  const PaginatedPagesNext();
+
+  const factory PaginatedPagesNext.link({
+    required String url,
+  }) = PaginatedPagesLinkNext;
+
+  const factory PaginatedPagesNext.cursor({
+    required int page,
+    required String? startingAfter,
+  }) = PaginatedPagesCursorNext;
+
+  Map<String, String> get query =>
+    throw UnsupportedError('Use PaginatedPagesLinkNext or PaginatedPagesCursorNext instead');
+}
+
+class PaginatedPagesLinkNext extends PaginatedPagesNext {
+  final String url;
+
+  const PaginatedPagesLinkNext({required this.url});
+
+  @override
+  Map<String, String> get query => Uri.parse(url).queryParameters;
+
+  @override
+  String toString() {
+    return 'PaginatedPagesLinkNext{url: $url}';
+  }
+}
+
+class PaginatedPagesCursorNext extends PaginatedPagesNext {
   final int page;
 
   @JsonKey(name: 'starting_after')
   final String? startingAfter;
 
-  PaginatedPagesNext({required this.page, required this.startingAfter});
+  const PaginatedPagesCursorNext({
+    required this.page,
+    required this.startingAfter,
+  });
 
-  factory PaginatedPagesNext.fromJson(Map<String, dynamic> json) => _$PaginatedPagesNextFromJson(json);
+  PaginatedPagesCursorNext.fromJson(Map<String, dynamic> json) : this(
+    page: json['page'] as int,
+    startingAfter: json['starting_after'] as String?,
+  );
 
-  Map<String, dynamic> toJson() => _$PaginatedPagesNextToJson(this);
+  @override
+  Map<String, String> get query => {
+    'starting_after': startingAfter ?? '',
+  };
 
   @override
   String toString() {
     return 'PaginatedPagesNext{page: $page, startingAfter: $startingAfter}';
   }
+
+  Map<String, dynamic> toJson() => {
+    'page': page,
+    'starting_after': startingAfter,
+  };
 }

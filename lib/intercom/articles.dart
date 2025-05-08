@@ -11,13 +11,11 @@ class Articles {
   const Articles(this.client);
 
   Future<Paginated<List<Article>>> list({
-    PaginatedPagesNext? page
+    PaginatedPagesNext? next
   }) async {
     return client.get(path,
       query: {
-        if (page != null) ...{
-          'starting_after': page.startingAfter
-        }
+        ...next?.query ?? {},
       },
       decoder: (json) => Paginated<List<Article>>.fromJson(json, (json) => ListOfArticles.fromJson(json as List))
     );

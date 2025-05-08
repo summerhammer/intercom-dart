@@ -30,9 +30,7 @@ Map<String, dynamic> _$PaginatedToJson<T>(
 
 PaginatedPages _$PaginatedPagesFromJson(Map<String, dynamic> json) =>
     PaginatedPages(
-      next: json['next'] == null
-          ? null
-          : PaginatedPagesNext.fromJson(json['next'] as Map<String, dynamic>),
+      next: const PaginatedPagesNextConverter().fromJson(json['next']),
       page: json['page'] as int,
       perPage: json['per_page'] as int,
       totalPages: json['total_pages'] as int,
@@ -40,20 +38,8 @@ PaginatedPages _$PaginatedPagesFromJson(Map<String, dynamic> json) =>
 
 Map<String, dynamic> _$PaginatedPagesToJson(PaginatedPages instance) =>
     <String, dynamic>{
-      'next': instance.next,
+      'next': const PaginatedPagesNextConverter().toJson(instance.next),
       'page': instance.page,
       'per_page': instance.perPage,
       'total_pages': instance.totalPages,
-    };
-
-PaginatedPagesNext _$PaginatedPagesNextFromJson(Map<String, dynamic> json) =>
-    PaginatedPagesNext(
-      page: json['page'] as int,
-      startingAfter: json['starting_after'] as String?,
-    );
-
-Map<String, dynamic> _$PaginatedPagesNextToJson(PaginatedPagesNext instance) =>
-    <String, dynamic>{
-      'page': instance.page,
-      'starting_after': instance.startingAfter,
     };

@@ -1,8 +1,8 @@
 name: intercom_api
 description: "Unofficial Intercom REST API client written in Dart"
-version: 0.1.0
+version: 0.2.0
 license: MIT
-homepage: https://github.com/rozd/intercom_api
+homepage: https://github.com/summerhammer/intercom-dart
 
 environment:
   sdk: '>=3.3.0 <4.0.0'
